@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Red de Servicios - Gladiadores de Cristo</title>
+    <title>Red de Servicios - Gladiadores de Cristo MDC</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        /* --- Tema Gladiadores (Azul Oscuro, Dorado y Rojo) --- */
         :root {
             --azul-fondo: #0b132b;
             --azul-carta: #1c2541;
@@ -28,315 +27,235 @@
             background-color: #000;
             border-bottom: 3px solid var(--rojo);
             text-align: center;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            padding: 30px 20px;
         }
 
-        header img {
-            max-width: 150px;
-            height: auto;
-        }
+        header img { max-width: 140px; }
 
-        header h1 {
-            color: var(--dorado);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 10px 0 0 0;
-            font-size: 1.8rem;
-        }
-
-        header p {
+        .intro-text {
+            max-width: 800px;
+            margin: 20px auto;
             color: #ccc;
-            margin-top: 5px;
-            font-size: 1rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* --- Aviso Inteligente de Seguridad --- */
+        .aviso-seguridad {
+            background: rgba(185, 28, 28, 0.1);
+            border: 1px solid var(--rojo);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: var(--dorado);
+            font-weight: 500;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 30px 20px;
+            padding: 20px;
         }
 
-        /* Buscador */
-        .search-container {
-            text-align: center;
-            margin-bottom: 15px;
-        }
+        .search-container { text-align: center; margin-bottom: 15px; }
 
         #searchInput {
             width: 100%;
-            max-width: 500px;
-            padding: 12px 20px;
+            max-width: 600px;
+            padding: 15px 25px;
             border: 2px solid var(--dorado);
             background-color: var(--azul-carta);
             color: white;
-            border-radius: 25px;
-            font-size: 16px;
+            border-radius: 30px;
+            font-size: 18px;
             outline: none;
-            transition: 0.3s;
         }
 
-        #searchInput:focus {
-            box-shadow: 0 0 10px var(--dorado);
-        }
-
-        #searchInput::placeholder {
-            color: #888;
-        }
-
-        /* --- NUEVO: Estilos para Búsquedas Sugeridas --- */
-        .sugerencias-container {
+        /* --- Sugerencias (12 items) --- */
+        .sugerencias-box {
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-            color: #aaa;
+            margin-bottom: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .sugerencia-tag {
-            display: inline-block;
+        .tag {
             background-color: var(--azul-carta);
-            border: 1px solid var(--rojo);
+            border: 1px solid var(--dorado-oscuro);
             color: var(--texto-claro);
-            padding: 6px 15px;
+            padding: 8px 16px;
             border-radius: 20px;
-            margin: 5px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
+            font-size: 0.9rem;
+            transition: 0.3s;
             text-transform: capitalize;
         }
 
-        .sugerencia-tag:hover {
-            background-color: var(--rojo);
-            border-color: var(--rojo);
-            transform: scale(1.05);
+        .tag:hover {
+            background-color: var(--dorado);
+            color: black;
         }
 
-        /* Cuadrícula de Tarjetas */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
         }
 
-        /* Estilo de cada Tarjeta de Gladiador */
         .card {
             background-color: var(--azul-carta);
-            border: 1px solid var(--dorado-oscuro);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: transform 0.3s;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 25px;
             display: flex;
             flex-direction: column;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--dorado);
-            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.2);
-        }
+        .card-name { color: var(--dorado); font-size: 1.5rem; font-weight: bold; }
+        .card-prof { color: var(--rojo); text-transform: uppercase; margin-bottom: 15px; font-weight: bold; font-size: 0.9rem; }
+        .card-desc { color: #ddd; flex-grow: 1; margin-bottom: 20px; }
 
-        .card-name {
-            color: var(--dorado);
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        .card-profession {
-            color: var(--rojo);
-            font-size: 1rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .card-description {
-            color: #ddd;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            margin-bottom: 20px;
-            flex-grow: 1;
-        }
-
-        .btn-whatsapp {
-            display: inline-block;
+        .btn-wa {
             background-color: #25D366;
             color: white;
             text-decoration: none;
+            padding: 12px;
+            border-radius: 6px;
             text-align: center;
-            padding: 10px;
+            font-weight: bold;
+        }
+
+        /* --- Footer Legal --- */
+        footer {
+            background-color: #000;
+            padding: 40px 20px;
+            margin-top: 50px;
+            border-top: 2px solid var(--dorado);
+            text-align: center;
+        }
+
+        .disclaimer {
+            color: #888;
+            font-size: 0.9rem;
+            max-width: 700px;
+            margin: 0 auto 20px;
+        }
+
+        .reporte-caja {
+            background-color: var(--rojo);
+            color: white;
+            display: inline-block;
+            padding: 10px 20px;
             border-radius: 5px;
             font-weight: bold;
-            transition: 0.2s;
-        }
-
-        .btn-whatsapp:hover {
-            background-color: #128C7E;
-        }
-
-        #loading {
-            text-align: center;
-            color: var(--dorado);
-            font-size: 1.2rem;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <img src="logo_gladiadores.png" alt="Logo Gladiadores de Cristo">
-        <h1>Red de Profesionales y Servicios</h1>
-        <p>Encuentra el talento y los servicios que ofrecen nuestros hermanos</p>
+        <img src="logo_gladiadores.png" alt="Logo Gladiadores MDC">
+        <h1>Gladiadores De Cristo MDC</h1>
+        <div class="intro-text">
+            Esta plataforma sirve de contacto para el trabajo, servicio o producto que ofrecen nuestros hermanos. 
+            Apoyamos el crecimiento mutuo dentro de nuestra comunidad.
+        </div>
     </header>
 
     <div class="container">
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="🔍 Buscar por profesión, nombre o servicio..." onkeyup="filtrarTarjetas()">
+        
+        <div class="aviso-seguridad">
+            ⚠️ <strong>Recomendación Importante:</strong> Al realizar una compra o contrato, tome las medidas necesarias 
+            para garantizar su cumplimiento y satisfacción.
         </div>
 
-        <div class="sugerencias-container" id="sugerencias-container">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="¿Qué servicio buscas hoy?" onkeyup="filtrar()">
+        </div>
+
+        <div class="sugerencias-box" id="tags">
             </div>
 
-        <div id="loading">Cargando base de datos de Gladiadores... ⏳</div>
-        <div id="servicesGrid" class="grid"></div>
+        <div id="grid" class="grid"></div>
     </div>
 
-    <script>
-        // ---------------------------------------------------------
-        // 1. PEGA AQUÍ EL ENLACE CSV DE TU GOOGLE SHEET PUBLICADO
-        // ---------------------------------------------------------
-        const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzMIq8vxTMpGRyzYSvgVLXifCbRj54g3IMjIiwJWibayJj1QIoItwW0ZUQLiC0azVo6oeSqtuhRVcK/pub?gid=0&single=true&output=csv"; 
-        
-        let gladiadoresData = [];
+    <footer>
+        <div class="disclaimer">
+            Gladiadores De Cristo MDC no se hace responsable por actuaciones inadecuadas al momento de ofrecer servicios o productos. 
+            Actuamos únicamente como nexo de comunicación.
+        </div>
+        <div class="reporte-caja">
+            ¿Mal servicio o incumplimiento? Infórmenos al: 78120249
+        </div>
+        <p style="margin-top:20px; color:#555;">&copy; 2026 Gladiadores de Cristo MDC</p>
+    </footer>
 
-        // Leer el CSV usando PapaParse
+    <script>
+        const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzMIq8vxTMpGRyzYSvgVLXifCbRj54g3IMjIiwJWibayJj1QIoItwW0ZUQLiC0azVo6oeSqtuhRVcK/pub?gid=0&single=true&output=csv";
+        let masterData = [];
+
         Papa.parse(urlCSV, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(results) {
-                document.getElementById('loading').style.display = 'none';
-                gladiadoresData = results.data;
-                renderizarTarjetas(gladiadoresData);
-                
-                // NUEVO: Llamar al algoritmo de palabras más usadas
-                generarBusquedasSugeridas(gladiadoresData);
-            },
-            error: function(err) {
-                document.getElementById('loading').innerHTML = "❌ Error al cargar los datos. Verifica el enlace CSV.";
-                console.error(err);
+            download: true, header: true,
+            complete: (results) => {
+                masterData = results.data;
+                render(masterData);
+                analizarTags(masterData);
             }
         });
 
-        // --- ALGORITMO DE PALABRAS MÁS REPETIDAS ---
-        function generarBusquedasSugeridas(datos) {
-            let textoCompleto = "";
+        function analizarTags(datos) {
+            let palabras = [];
+            const ignorar = ['para', 'con', 'hago', 'venta', 'servicios', 'como', 'todo', 'esta', 'este', 'los', 'las', 'del'];
             
-            // 1. Recolectar textos de profesiones y descripciones
-            datos.forEach(fila => {
-                textoCompleto += (fila["Profesión/Oficio"] || "") + " ";
-                textoCompleto += (fila["Descripción del Producto"] || fila["Descripción del producto"] || "") + " ";
-            });
-
-            // 2. Limpieza de texto (quitar tildes, signos de puntuación y pasar a minúsculas)
-            textoCompleto = textoCompleto.toLowerCase()
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quita tildes
-                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"") // Quita puntuación
-                .replace(/\s{2,}/g," "); // Quita espacios dobles
-
-            let palabras = textoCompleto.split(" ");
-            let conteo = {};
-
-            // 3. Diccionario de palabras a ignorar (Stopwords)
-            const palabrasIgnoradas = ['de', 'la', 'el', 'en', 'para', 'y', 'con', 'las', 'los', 'un', 'una', 'o', 'a', 'su', 'se', 'del', 'al', 'por', 'como', 'mas', 'lo', 'que', 'mi', 'sin', 'hago', 'hacemos', 'todo', 'tambien', 'servicios', 'trabajo', 'ofrece', 'venta', 'ventas', 'soy'];
-
-            // 4. Contar la frecuencia de cada palabra válida
-            palabras.forEach(palabra => {
-                if(palabra.length > 3 && !palabrasIgnoradas.includes(palabra)) {
-                    conteo[palabra] = (conteo[palabra] || 0) + 1;
-                }
-            });
-
-            // 5. Ordenar de mayor a menor y tomar las 6 más populares
-            let palabrasOrdenadas = Object.keys(conteo).sort((a, b) => conteo[b] - conteo[a]);
-            let topPalabras = palabrasOrdenadas.slice(0, 6);
-
-            // 6. Imprimir botones en la pantalla
-            const contenedor = document.getElementById('sugerencias-container');
-            if(topPalabras.length > 0) {
-                contenedor.innerHTML = "Tendencias: ";
-                topPalabras.forEach(palabra => {
-                    contenedor.innerHTML += `<span class="sugerencia-tag" onclick="aplicarSugerencia('${palabra}')">${palabra}</span>`;
+            datos.forEach(f => {
+                let texto = ((f["Profesión/Oficio"] || "") + " " + (f["Descripción del Producto"] || "")).toLowerCase();
+                texto.split(/\s+/).forEach(p => {
+                    if (p.length > 4 && !ignorar.includes(p)) palabras.push(p);
                 });
-            }
-        }
-
-        // Función que se ejecuta al hacer clic en una sugerencia
-        function aplicarSugerencia(palabra) {
-            const input = document.getElementById('searchInput');
-            input.value = palabra; // Pone la palabra en el buscador
-            filtrarTarjetas(); // Llama a la función que filtra las cartas
-            
-            // Un pequeño efecto visual para que se note que hizo algo
-            input.focus();
-            input.style.boxShadow = "0 0 15px var(--rojo)";
-            setTimeout(() => input.style.boxShadow = "", 500);
-        }
-
-        function formatearNumeroWA(numero) {
-            if (!numero) return "";
-            let limpio = numero.replace(/\D/g, '');
-            if (limpio.length === 8) {
-                limpio = "591" + limpio; 
-            }
-            return limpio;
-        }
-
-        function renderizarTarjetas(datos) {
-            const grid = document.getElementById('servicesGrid');
-            grid.innerHTML = ""; 
-
-            datos.forEach(fila => {
-                const nombre = fila["Nombre Completo"] || "";
-                const profesion = fila["Profesión/Oficio"] || "";
-                const descripcion = fila["Descripción del Producto"] || fila["Descripción del producto"] || "Sin descripción detallada.";
-                const telefono = fila["Teléfono"] || "";
-
-                if (nombre.trim() !== "" && profesion.trim() !== "") {
-                    const numWA = formatearNumeroWA(telefono);
-                    const enlaceWA = `https://wa.me/${numWA}?text=Hola%20${encodeURIComponent(nombre)},%20vi%20tu%20perfil%20en%20la%20red%20de%20Gladiadores.`;
-
-                    const cardHTML = `
-                        <div class="card">
-                            <div class="card-name">${nombre}</div>
-                            <div class="card-profession">${profesion}</div>
-                            <div class="card-description">${descripcion}</div>
-                            ${numWA ? `<a href="${enlaceWA}" target="_blank" class="btn-whatsapp">📲 Contactar por WhatsApp</a>` : '<span style="color:#888; font-size:14px; text-align:center;">Sin número registrado</span>'}
-                        </div>
-                    `;
-                    grid.innerHTML += cardHTML;
-                }
             });
+
+            let conteo = {};
+            palabras.forEach(p => conteo[p] = (conteo[p] || 0) + 1);
+            
+            // Top 12 sugerencias
+            let ordenadas = Object.keys(conteo).sort((a,b) => conteo[b] - conteo[a]).slice(0, 12);
+            
+            const box = document.getElementById('tags');
+            box.innerHTML = ordenadas.map(p => `<span class="tag" onclick="autoSearch('${p}')">${p}</span>`).join('');
         }
 
-        function filtrarTarjetas() {
-            // El buscador ahora ignora tildes para que sea más fácil encontrar
-            let textoBusqueda = document.getElementById('searchInput').value.toLowerCase();
-            textoBusqueda = textoBusqueda.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            
-            const filtrados = gladiadoresData.filter(fila => {
-                const nombre = (fila["Nombre Completo"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                const profesion = (fila["Profesión/Oficio"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                const descripcion = (fila["Descripción del Producto"] || fila["Descripción del producto"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        function autoSearch(val) {
+            document.getElementById('searchInput').value = val;
+            filtrar();
+        }
+
+        function render(datos) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = datos.filter(f => f["Nombre Completo"]).map(f => {
+                let tel = (f["Teléfono"] || "").replace(/\D/g, '');
+                if (tel.length === 8) tel = "591" + tel;
                 
-                return nombre.includes(textoBusqueda) || profesion.includes(textoBusqueda) || descripcion.includes(textoBusqueda);
-            });
+                return `
+                    <div class="card">
+                        <div class="card-name">${f["Nombre Completo"]}</div>
+                        <div class="card-prof">${f["Profesión/Oficio"] || 'General'}</div>
+                        <div class="card-desc">${f["Descripción del Producto"] || 'Hermano Gladiador ofreciendo sus servicios.'}</div>
+                        <a href="https://wa.me/${tel}" class="btn-wa" target="_blank">Contactar ahora</a>
+                    </div>
+                `;
+            }).join('');
+        }
 
-            renderizarTarjetas(filtrados);
+        function filtrar() {
+            let query = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = masterData.filter(f => 
+                (f["Nombre Completo"] || "").toLowerCase().includes(query) ||
+                (f["Profesión/Oficio"] || "").toLowerCase().includes(query)
+            );
+            render(filtered);
         }
     </script>
 </body>
