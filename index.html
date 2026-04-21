@@ -60,7 +60,7 @@
         /* Buscador */
         .search-container {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
         }
 
         #searchInput {
@@ -82,6 +82,34 @@
 
         #searchInput::placeholder {
             color: #888;
+        }
+
+        /* --- NUEVO: Estilos para Búsquedas Sugeridas --- */
+        .sugerencias-container {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            color: #aaa;
+        }
+
+        .sugerencia-tag {
+            display: inline-block;
+            background-color: var(--azul-carta);
+            border: 1px solid var(--rojo);
+            color: var(--texto-claro);
+            padding: 6px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .sugerencia-tag:hover {
+            background-color: var(--rojo);
+            border-color: var(--rojo);
+            transform: scale(1.05);
         }
 
         /* Cuadrícula de Tarjetas */
@@ -131,13 +159,12 @@
             font-size: 0.95rem;
             line-height: 1.5;
             margin-bottom: 20px;
-            flex-grow: 1; /* Empuja el botón hacia abajo */
+            flex-grow: 1;
         }
 
-        /* Botón de WhatsApp */
         .btn-whatsapp {
             display: inline-block;
-            background-color: #25D366; /* Color oficial WhatsApp */
+            background-color: #25D366;
             color: white;
             text-decoration: none;
             text-align: center;
@@ -171,6 +198,9 @@
             <input type="text" id="searchInput" placeholder="🔍 Buscar por profesión, nombre o servicio..." onkeyup="filtrarTarjetas()">
         </div>
 
+        <div class="sugerencias-container" id="sugerencias-container">
+            </div>
+
         <div id="loading">Cargando base de datos de Gladiadores... ⏳</div>
         <div id="servicesGrid" class="grid"></div>
     </div>
@@ -186,12 +216,15 @@
         // Leer el CSV usando PapaParse
         Papa.parse(urlCSV, {
             download: true,
-            header: true, // Usa la primera fila como nombres de variables
+            header: true,
             skipEmptyLines: true,
             complete: function(results) {
                 document.getElementById('loading').style.display = 'none';
                 gladiadoresData = results.data;
                 renderizarTarjetas(gladiadoresData);
+                
+                // NUEVO: Llamar al algoritmo de palabras más usadas
+                generarBusquedasSugeridas(gladiadoresData);
             },
             error: function(err) {
                 document.getElementById('loading').innerHTML = "❌ Error al cargar los datos. Verifica el enlace CSV.";
@@ -199,37 +232,84 @@
             }
         });
 
-        // Función para limpiar el número y crear link de WhatsApp
+        // --- ALGORITMO DE PALABRAS MÁS REPETIDAS ---
+        function generarBusquedasSugeridas(datos) {
+            let textoCompleto = "";
+            
+            // 1. Recolectar textos de profesiones y descripciones
+            datos.forEach(fila => {
+                textoCompleto += (fila["Profesión/Oficio"] || "") + " ";
+                textoCompleto += (fila["Descripción del Producto"] || fila["Descripción del producto"] || "") + " ";
+            });
+
+            // 2. Limpieza de texto (quitar tildes, signos de puntuación y pasar a minúsculas)
+            textoCompleto = textoCompleto.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quita tildes
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"") // Quita puntuación
+                .replace(/\s{2,}/g," "); // Quita espacios dobles
+
+            let palabras = textoCompleto.split(" ");
+            let conteo = {};
+
+            // 3. Diccionario de palabras a ignorar (Stopwords)
+            const palabrasIgnoradas = ['de', 'la', 'el', 'en', 'para', 'y', 'con', 'las', 'los', 'un', 'una', 'o', 'a', 'su', 'se', 'del', 'al', 'por', 'como', 'mas', 'lo', 'que', 'mi', 'sin', 'hago', 'hacemos', 'todo', 'tambien', 'servicios', 'trabajo', 'ofrece', 'venta', 'ventas', 'soy'];
+
+            // 4. Contar la frecuencia de cada palabra válida
+            palabras.forEach(palabra => {
+                if(palabra.length > 3 && !palabrasIgnoradas.includes(palabra)) {
+                    conteo[palabra] = (conteo[palabra] || 0) + 1;
+                }
+            });
+
+            // 5. Ordenar de mayor a menor y tomar las 6 más populares
+            let palabrasOrdenadas = Object.keys(conteo).sort((a, b) => conteo[b] - conteo[a]);
+            let topPalabras = palabrasOrdenadas.slice(0, 6);
+
+            // 6. Imprimir botones en la pantalla
+            const contenedor = document.getElementById('sugerencias-container');
+            if(topPalabras.length > 0) {
+                contenedor.innerHTML = "Tendencias: ";
+                topPalabras.forEach(palabra => {
+                    contenedor.innerHTML += `<span class="sugerencia-tag" onclick="aplicarSugerencia('${palabra}')">${palabra}</span>`;
+                });
+            }
+        }
+
+        // Función que se ejecuta al hacer clic en una sugerencia
+        function aplicarSugerencia(palabra) {
+            const input = document.getElementById('searchInput');
+            input.value = palabra; // Pone la palabra en el buscador
+            filtrarTarjetas(); // Llama a la función que filtra las cartas
+            
+            // Un pequeño efecto visual para que se note que hizo algo
+            input.focus();
+            input.style.boxShadow = "0 0 15px var(--rojo)";
+            setTimeout(() => input.style.boxShadow = "", 500);
+        }
+
         function formatearNumeroWA(numero) {
             if (!numero) return "";
-            // Quita signos +, espacios y guiones
             let limpio = numero.replace(/\D/g, '');
-            // Si no tiene 591 (código de Bolivia), se lo agregamos por si acaso
             if (limpio.length === 8) {
                 limpio = "591" + limpio; 
             }
             return limpio;
         }
 
-        // Función para mostrar las tarjetas en la pantalla
         function renderizarTarjetas(datos) {
             const grid = document.getElementById('servicesGrid');
-            grid.innerHTML = ""; // Limpiar antes de dibujar
+            grid.innerHTML = ""; 
 
             datos.forEach(fila => {
-                // Leer las columnas exactas de tu Excel
                 const nombre = fila["Nombre Completo"] || "";
                 const profesion = fila["Profesión/Oficio"] || "";
                 const descripcion = fila["Descripción del Producto"] || fila["Descripción del producto"] || "Sin descripción detallada.";
                 const telefono = fila["Teléfono"] || "";
 
-                // FILTRO: Solo mostrar si tienen nombre y alguna profesión
                 if (nombre.trim() !== "" && profesion.trim() !== "") {
-                    
                     const numWA = formatearNumeroWA(telefono);
                     const enlaceWA = `https://wa.me/${numWA}?text=Hola%20${encodeURIComponent(nombre)},%20vi%20tu%20perfil%20en%20la%20red%20de%20Gladiadores.`;
 
-                    // Crear el HTML de la tarjeta
                     const cardHTML = `
                         <div class="card">
                             <div class="card-name">${nombre}</div>
@@ -238,20 +318,20 @@
                             ${numWA ? `<a href="${enlaceWA}" target="_blank" class="btn-whatsapp">📲 Contactar por WhatsApp</a>` : '<span style="color:#888; font-size:14px; text-align:center;">Sin número registrado</span>'}
                         </div>
                     `;
-                    
                     grid.innerHTML += cardHTML;
                 }
             });
         }
 
-        // Función para el buscador
         function filtrarTarjetas() {
-            const textoBusqueda = document.getElementById('searchInput').value.toLowerCase();
+            // El buscador ahora ignora tildes para que sea más fácil encontrar
+            let textoBusqueda = document.getElementById('searchInput').value.toLowerCase();
+            textoBusqueda = textoBusqueda.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             
             const filtrados = gladiadoresData.filter(fila => {
-                const nombre = (fila["Nombre Completo"] || "").toLowerCase();
-                const profesion = (fila["Profesión/Oficio"] || "").toLowerCase();
-                const descripcion = (fila["Descripción del Producto"] || fila["Descripción del producto"] || "").toLowerCase();
+                const nombre = (fila["Nombre Completo"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const profesion = (fila["Profesión/Oficio"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const descripcion = (fila["Descripción del Producto"] || fila["Descripción del producto"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 
                 return nombre.includes(textoBusqueda) || profesion.includes(textoBusqueda) || descripcion.includes(textoBusqueda);
             });
