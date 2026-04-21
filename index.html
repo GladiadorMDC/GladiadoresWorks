@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red de Servicios - Gladiadores de Cristo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        /* --- Tema Gladiadores (Azul Oscuro, Dorado y Rojo) --- */
+        :root {
+            --azul-fondo: #0b132b;
+            --azul-carta: #1c2541;
+            --dorado: #d4af37;
+            --dorado-oscuro: #aa8c2c;
+            --rojo: #b91c1c;
+            --texto-claro: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--azul-fondo);
+            color: var(--texto-claro);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #000;
+            border-bottom: 3px solid var(--rojo);
+            text-align: center;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        header img {
+            max-width: 150px;
+            height: auto;
+        }
+
+        header h1 {
+            color: var(--dorado);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 10px 0 0 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            color: #ccc;
+            margin-top: 5px;
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* Buscador */
+        .search-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #searchInput {
+            width: 100%;
+            max-width: 500px;
+            padding: 12px 20px;
+            border: 2px solid var(--dorado);
+            background-color: var(--azul-carta);
+            color: white;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        #searchInput:focus {
+            box-shadow: 0 0 10px var(--dorado);
+        }
+
+        #searchInput::placeholder {
+            color: #888;
+        }
+
+        /* Cuadrícula de Tarjetas */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Estilo de cada Tarjeta de Gladiador */
+        .card {
+            background-color: var(--azul-carta);
+            border: 1px solid var(--dorado-oscuro);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--dorado);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.2);
+        }
+
+        .card-name {
+            color: var(--dorado);
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .card-profession {
+            color: var(--rojo);
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-description {
+            color: #ddd;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            flex-grow: 1; /* Empuja el botón hacia abajo */
+        }
+
+        /* Botón de WhatsApp */
+        .btn-whatsapp {
+            display: inline-block;
+            background-color: #25D366; /* Color oficial WhatsApp */
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-whatsapp:hover {
+            background-color: #128C7E;
+        }
+
+        #loading {
+            text-align: center;
+            color: var(--dorado);
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo_gladiadores.jpg" alt="Logo Gladiadores de Cristo">
+        <h1>Red de Profesionales y Servicios</h1>
+        <p>Encuentra el talento y los servicios que ofrecen nuestros hermanos</p>
+    </header>
+
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="🔍 Buscar por profesión, nombre o servicio..." onkeyup="filtrarTarjetas()">
+        </div>
+
+        <div id="loading">Cargando base de datos de Gladiadores... ⏳</div>
+        <div id="servicesGrid" class="grid"></div>
+    </div>
+
+    <script>
+        // ---------------------------------------------------------
+        // 1. PEGA AQUÍ EL ENLACE CSV DE TU GOOGLE SHEET PUBLICADO
+        // ---------------------------------------------------------
+        const urlCSV = "AQUI_PEGA_TU_ENLACE_CSV"; 
+        
+        let gladiadoresData = [];
+
+        // Leer el CSV usando PapaParse
+        Papa.parse(urlCSV, {
+            download: true,
+            header: true, // Usa la primera fila como nombres de variables
+            skipEmptyLines: true,
+            complete: function(results) {
+                document.getElementById('loading').style.display = 'none';
+                gladiadoresData = results.data;
+                renderizarTarjetas(gladiadoresData);
+            },
+            error: function(err) {
+                document.getElementById('loading').innerHTML = "❌ Error al cargar los datos. Verifica el enlace CSV.";
+                console.error(err);
+            }
+        });
+
+        // Función para limpiar el número y crear link de WhatsApp
+        function formatearNumeroWA(numero) {
+            if (!numero) return "";
+            // Quita signos +, espacios y guiones
+            let limpio = numero.replace(/\D/g, '');
+            // Si no tiene 591 (código de Bolivia), se lo agregamos por si acaso
+            if (limpio.length === 8) {
+                limpio = "591" + limpio; 
+            }
+            return limpio;
+        }
+
+        // Función para mostrar las tarjetas en la pantalla
+        function renderizarTarjetas(datos) {
+            const grid = document.getElementById('servicesGrid');
+            grid.innerHTML = ""; // Limpiar antes de dibujar
+
+            datos.forEach(fila => {
+                // Leer las columnas exactas de tu Excel
+                const nombre = fila["Nombre Completo"] || "";
+                const profesion = fila["Profesión/Oficio"] || "";
+                const descripcion = fila["Descripción del Producto"] || fila["Descripción del producto"] || "Sin descripción detallada.";
+                const telefono = fila["Teléfono"] || "";
+
+                // FILTRO: Solo mostrar si tienen nombre y alguna profesión
+                if (nombre.trim() !== "" && profesion.trim() !== "") {
+                    
+                    const numWA = formatearNumeroWA(telefono);
+                    const enlaceWA = `https://wa.me/${numWA}?text=Hola%20${encodeURIComponent(nombre)},%20vi%20tu%20perfil%20en%20la%20red%20de%20Gladiadores.`;
+
+                    // Crear el HTML de la tarjeta
+                    const cardHTML = `
+                        <div class="card">
+                            <div class="card-name">${nombre}</div>
+                            <div class="card-profession">${profesion}</div>
+                            <div class="card-description">${descripcion}</div>
+                            ${numWA ? `<a href="${enlaceWA}" target="_blank" class="btn-whatsapp">📲 Contactar por WhatsApp</a>` : '<span style="color:#888; font-size:14px; text-align:center;">Sin número registrado</span>'}
+                        </div>
+                    `;
+                    
+                    grid.innerHTML += cardHTML;
+                }
+            });
+        }
+
+        // Función para el buscador
+        function filtrarTarjetas() {
+            const textoBusqueda = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtrados = gladiadoresData.filter(fila => {
+                const nombre = (fila["Nombre Completo"] || "").toLowerCase();
+                const profesion = (fila["Profesión/Oficio"] || "").toLowerCase();
+                const descripcion = (fila["Descripción del Producto"] || fila["Descripción del producto"] || "").toLowerCase();
+                
+                return nombre.includes(textoBusqueda) || profesion.includes(textoBusqueda) || descripcion.includes(textoBusqueda);
+            });
+
+            renderizarTarjetas(filtrados);
+        }
+    </script>
+</body>
+</html>
