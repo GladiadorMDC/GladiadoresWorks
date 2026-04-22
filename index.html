@@ -186,7 +186,7 @@
         </div>
 
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Buscar por nombre, profesión o producto" onkeyup="filtrar()">
+            <input type="text" id="searchInput" placeholder="Buscar por nombre, profesión o producto (ej. shampoo)..." onkeyup="filtrar()">
         </div>
 
         <div class="sugerencias-box" id="tags">
@@ -227,7 +227,6 @@
             
             datos.forEach(f => {
                 let texto = ((f["Profesión/Oficio"] || "") + " " + (f["Descripción del Producto"] || f["Descripción del producto"] || "")).toLowerCase();
-                // Quitar tildes y signos para contar mejor
                 texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
                 
                 texto.split(/\s+/).forEach(p => {
@@ -249,7 +248,6 @@
             input.value = val;
             filtrar();
             
-            // Efecto visual al hacer clic en una sugerencia
             input.focus();
             input.style.boxShadow = "0 0 15px var(--rojo)";
             setTimeout(() => input.style.boxShadow = "", 500);
@@ -261,32 +259,34 @@
                 let tel = (f["Teléfono"] || "").replace(/\D/g, '');
                 if (tel.length === 8) tel = "591" + tel;
                 
-                // Extraer descripción correctamente (por si el Excel tiene mayúsculas o minúsculas)
                 let descripcion = f["Descripción del Producto"] || f["Descripción del producto"] || 'Servicio registrado en la red de Gladiadores.';
+                let profesionOficio = f["Profesión/Oficio"];
+
+                // AQUÍ SE GENERA EL MENSAJE AUTOMÁTICO COMPROBATORIO
+                let mensajeWa = `¡Hola ${f["Nombre Completo"]}! Vi tu perfil en la plataforma Gladiadores de Cristo MDC y me interesa tu servicio/producto de: ${profesionOficio}.`;
+                let enlaceWA = `https://wa.me/${tel}?text=${encodeURIComponent(mensajeWa)}`;
 
                 return `
                     <div class="card">
                         <div class="card-name">${f["Nombre Completo"]}</div>
-                        <div class="card-prof">${f["Profesión/Oficio"]}</div>
+                        <div class="card-prof">${profesionOficio}</div>
                         <div class="card-desc">${descripcion}</div>
-                        <a href="https://wa.me/${tel}" class="btn-wa" target="_blank">Contactar ahora</a>
+                        <a href="${enlaceWA}" class="btn-wa" target="_blank">Contactar ahora</a>
                     </div>
                 `;
             }).join('');
         }
 
-        // --- AHORA SÍ: El Buscador Integral ---
+        // --- Buscador Integral ---
         function filtrar() {
             let query = document.getElementById('searchInput').value.toLowerCase();
-            query = query.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Ignora tildes al escribir
+            query = query.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
             
             let filtered = masterData.filter(f => {
-                // Recuperar los textos
                 const nombre = (f["Nombre Completo"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const profesion = (f["Profesión/Oficio"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const descripcion = (f["Descripción del Producto"] || f["Descripción del producto"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 
-                // AQUÍ ESTÁ LA CORRECCIÓN: Ahora revisa los 3 campos
                 return nombre.includes(query) || profesion.includes(query) || descripcion.includes(query);
             });
             
